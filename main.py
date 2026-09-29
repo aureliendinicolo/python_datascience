@@ -1,1 +1,1 @@
-
+print("diagramme baton c nul")
