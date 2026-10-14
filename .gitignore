@@ -1,0 +1,4 @@
+data/
+.env     # a voir si on en a besoin (selon les sources de données qu'on va importer)
+__pycache__/
+.ipynb_checkpoints/
