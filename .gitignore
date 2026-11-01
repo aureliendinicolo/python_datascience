@@ -1,0 +1,6 @@
+# Données téléchargées ou générées : trop lourdes pour Git, regénérées par le notebook
+data/
+
+# Fichiers temporaires de Jupyter et de Python
+.ipynb_checkpoints/
+__pycache__/
