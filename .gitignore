@@ -1,5 +1,8 @@
-# Données téléchargées ou générées : trop lourdes pour Git, regénérées par le notebook
+# Données téléchargées ou générées : trop lourdes pour Git, regénérées par les notebooks
 data/
+
+# Variables d'environnement (à voir si on en a besoin selon les sources importées)
+.env
 
 # Fichiers temporaires de Jupyter et de Python
 .ipynb_checkpoints/

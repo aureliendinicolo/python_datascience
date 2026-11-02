@@ -14,16 +14,32 @@ On ne cherche pas à établir un effet causal de la plateforme. On décrit comme
 
 Les données sont téléchargées directement depuis les URL publiques. Elles ne sont pas stockées dans le dépôt.
 
+## Installation
+
+```
+git clone https://github.com/aureliendinicolo/python_datascience.git
+cd python_datascience
+pip install -r requirements.txt
+```
+
+Ce projet est testé sur le SSP Cloud (Onyxia, Genes et Insee).
+
+## Lancement
+
+Ouvrir `notebooks/rapport.ipynb` et exécuter toutes les cellules. Les données sont téléchargées automatiquement dans `data/`.
+
 ## Organisation du dépôt
 
-- `exploration.ipynb` : notebook d'exploration. Il télécharge les 8 sessions, construit la base empilée et l'enregistre dans `data/`.
-- `data/` : données générées par le notebook, non versionnées (voir `.gitignore`).
+- `notebooks/rapport.ipynb` : notebook final, qui importe les fonctions de `sources/`.
+- `notebooks/exploration.ipynb` : notebook d'exploration. Il garde la trace des vérifications qui justifient nos choix (identifiant, sélectivité, filières) et enregistre la base empilée dans `data/`.
+- `sources/` : fonctions Python importées par les notebooks (`chargement_data.py` pour télécharger les données ; `cleaning_data.py`, `indicateurs.py` et `graphiques.py` à remplir).
+- `data/` : données téléchargées ou générées, non versionnées (voir `.gitignore`).
 
 ## Avancement
 
 Fait :
 
-- import des 8 sessions depuis l'API du ministère ;
+- chargement des 8 sessions avec mise en cache dans `data/raw/` (`sources/chargement_data.py`) ;
 - identifiant de formation suivi d'une année à l'autre (`code`), validé en 2019-2020 et en 2025 ;
 - sélectivité harmonisée (`selective`, 0/1), reportée de 2020 sur 2018-2019 puis complétée grâce à la filière (seules 634 licences de 2018-2019 restent sans statut) ;
 - nomenclature commune des filières (`filiere`) ;
@@ -31,11 +47,7 @@ Fait :
 
 À faire, dans cet ordre :
 
-1. Passer le code du notebook dans des fonctions (fichiers `.py`) importées par un notebook final.
-2. Enrichir la base par des jointures avec d'autres sources (par exemple : bacheliers par académie, IPS des lycées, données INSEE), en commençant par l'Île-de-France.
+1. Passer le code de `notebooks/exploration.ipynb` dans des fonctions de `sources/`, utilisées par `notebooks/rapport.ipynb`.
+2. Enrichir la base par des jointures avec d'autres sources (par exemple : IPS des lycées, bacheliers par académie, données des communes), en commençant par l'Île-de-France.
 3. Analyse descriptive avec graphiques : boursiers, type de bac, mobilité géographique, par filière et selon la sélectivité.
 4. Rédiger les limites (formations sans code en 2018-2019, sélectivité imputée).
-
-## Reproduire
-
-À compléter : dépendances (`requirements.txt`) et ordre d'exécution.
