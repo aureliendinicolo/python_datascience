@@ -1,4 +1,9 @@
+# Données téléchargées ou générées : trop lourdes pour Git, regénérées par les notebooks
 data/
-.env     # a voir si on en a besoin (selon les sources de données qu'on va importer)
-__pycache__/
+
+# Variables d'environnement (à voir si on en a besoin selon les sources importées)
+.env
+
+# Fichiers temporaires de Jupyter et de Python
 .ipynb_checkpoints/
+__pycache__/
