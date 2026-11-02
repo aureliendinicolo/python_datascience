@@ -2,32 +2,47 @@ import pandas as pd
 import os
 
 
-DATASETS = {
-    2018: "https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/fr-esr-parcoursup-2018/exports/csv/?delimiter=%3B&lang=fr&timezone=Europe%2FParis&use_labels=true",
-    2019: "https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/fr-esr-parcoursup-2019/exports/csv/?delimiter=%3B&lang=fr&timezone=Europe%2FParis&use_labels=true",
-    2020: "https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/fr-esr-parcoursup_2020/exports/csv/?delimiter=%3B&lang=fr&timezone=Europe%2FParis&use_labels=true",
-    2021: "https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/fr-esr-parcoursup_2021/exports/csv/?delimiter=%3B&lang=fr&timezone=Europe%2FParis&use_labels=true",
-    2022: "https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/fr-esr-parcoursup_2022/exports/csv/?delimiter=%3B&lang=fr&timezone=Europe%2FParis&use_labels=true",
-    2023: "https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/fr-esr-parcoursup_2023/exports/csv/?delimiter=%3B&lang=fr&timezone=Europe%2FParis&use_labels=true",
-    2024: "https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/fr-esr-parcoursup_2024/exports/csv/?delimiter=%3B&lang=fr&timezone=Europe%2FParis&use_labels=true",
-    2025: "https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/fr-esr-parcoursup/exports/csv/?delimiter=%3B&lang=fr&timezone=Europe%2FParis&use_labels=true",
-
+# Identifiant de chaque session sur le portail open data du ministère
+IDENTIFIANTS = {
+    2018: "fr-esr-parcoursup-2018",
+    2019: "fr-esr-parcoursup-2019",
+    2020: "fr-esr-parcoursup_2020",
+    2021: "fr-esr-parcoursup_2021",
+    2022: "fr-esr-parcoursup_2022",
+    2023: "fr-esr-parcoursup_2023",
+    2024: "fr-esr-parcoursup_2024",
+    2025: "fr-esr-parcoursup",
 }
-# code plus élaboré qui permet de faire deux cas : soit les données ne sont pas chargées, on les charge dans data/raw, soit elles existes et on les lit juste. Il suffit de commander avec force=true pour forcer le retéléchargement (mise à jour ou autre)
+
+# Sans use_labels=true, l'export garde les noms courts des colonnes (cod_uai, acc_tot...),
+# qui sont les identifiants stables décrits dans la documentation du jeu de données.
+URL = "https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/{}/exports/csv?delimiter=%3B"
+DATASETS = {annee: URL.format(identifiant) for annee, identifiant in IDENTIFIANTS.items()}
+
+# Dossier du cache : data/raw/ à la racine du dépôt. On part de l'emplacement de ce fichier
+# (sources/), pour que le chemin soit le bon quel que soit le dossier d'où on lance le code.
+DOSSIER_RAW = os.path.join(os.path.dirname(__file__), "..", "data", "raw")
+
+# dep (codes 2A/2B de la Corse, zéro initial de "01") et cod_uai (lettre finale) sont lus
+# en texte, pour garder les zéros et avoir le même type toutes les années.
+TYPES = {"dep": str, "cod_uai": str}
+
 
 def charger_parcoursup(annee, force=False):
-    """Charge le jeu de données Parcoursup d'une année
-    Le fichier est téléchargé une seule fois puis gardé en cache
-    dans data/raw/. force = False par défaut, utiliser force=True pour retélécharger les données au cas où elles soient déjà enregistrées (mise à jour des données ou autre).
+    """Charge le jeu de données Parcoursup d'une année.
+
+    Le fichier est téléchargé une seule fois, puis gardé en cache dans data/raw/.
+    Avec force=True, on le retélécharge même s'il est déjà enregistré
+    (mise à jour des données, ou ancien fichier à remplacer).
+    L'année est déjà dans la colonne session.
     """
-    chemin = f"../data/raw/parcoursup_{annee}.csv"
+    chemin = os.path.join(DOSSIER_RAW, f"parcoursup_{annee}.csv")
 
     if force or not os.path.exists(chemin):
-        df = pd.read_csv(DATASETS[annee], sep=";", low_memory=False)
-        os.makedirs("../data/raw", exist_ok=True)
+        df = pd.read_csv(DATASETS[annee], sep=";", low_memory=False, dtype=TYPES)
+        os.makedirs(DOSSIER_RAW, exist_ok=True)
         df.to_csv(chemin, index=False, sep=";")
     else:
-        df = pd.read_csv(chemin, sep=";", low_memory=False)
+        df = pd.read_csv(chemin, sep=";", low_memory=False, dtype=TYPES)
 
-    df["annee"] = annee
     return df
