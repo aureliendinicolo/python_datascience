@@ -11,6 +11,8 @@ On ne cherche pas à établir un effet causal de la plateforme. On décrit comme
 ## Données
 
 - Parcoursup, vœux de poursuite d'études et de réorientation, sessions 2018 à 2025 : open data du ministère de l'Enseignement supérieur ([data.enseignementsup-recherche.gouv.fr](https://data.enseignementsup-recherche.gouv.fr/explore/?q=parcoursup)). Une ligne correspond à une formation pour une session.
+- Indice de position sociale (IPS) des lycées, rentrées 2016 à 2025 : open data de l'Éducation nationale ([data.education.gouv.fr](https://data.education.gouv.fr/explore/?q=indice+de+position+sociale)), en trois fichiers. Joint aux formations par le code UAI et l'année (CPGE et BTS principalement).
+- Taux de poursuite des néo-bacheliers dans l'enseignement supérieur par académie, 2010 à 2025 : open data du ministère de l'Enseignement supérieur ([fiche du jeu de données](https://data.enseignementsup-recherche.gouv.fr/explore/dataset/fr-esr-taux-poursuite-enseignement-superieur-par-academie/information/)). Joint aux admis de Parcoursup par académie et par année.
 
 Les données sont téléchargées directement depuis les URL publiques. Elles ne sont pas stockées dans le dépôt.
 
@@ -45,9 +47,10 @@ Fait :
 - nomenclature commune des filières (`filiere`) ;
 - base empilée : une ligne par formation et par session, environ 104 000 lignes.
 
+- préparation de la base en fonctions (`sources/cleaning_data.py`), appelées par `notebooks/rapport.ipynb` ;
+- enrichissements : IPS des lycées (`joindre_ips`), taux de poursuite par académie (`panel_academies`), indicateurs pour le zoom Île-de-France (`sources/indicateurs.py`).
+
 À faire, dans cet ordre :
 
-1. Passer le code de `notebooks/exploration.ipynb` dans des fonctions de `sources/`, utilisées par `notebooks/rapport.ipynb`.
-2. Enrichir la base par des jointures avec d'autres sources (par exemple : IPS des lycées, bacheliers par académie, données des communes), en commençant par l'Île-de-France.
-3. Analyse descriptive avec graphiques : boursiers, type de bac, mobilité géographique, par filière et selon la sélectivité.
-4. Rédiger les limites (formations sans code en 2018-2019, sélectivité imputée).
+1. Analyse descriptive avec graphiques (`sources/graphiques.py`) : boursiers (rapport admis/candidats chaque année), type de bac, IPS des lycées pour les CPGE et les BTS, zoom Île-de-France.
+2. Rédiger les limites : formations sans code en 2018-2019, sélectivité imputée, sauts de la part de boursiers en 2020 et 2025 (aussi chez les candidats, donc liés au comptage), académie de la formation et académie du bac différentes.

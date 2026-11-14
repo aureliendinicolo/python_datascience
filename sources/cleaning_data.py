@@ -42,6 +42,16 @@ STATUT_FILIERE = {
 }
 
 
+# Noms d'académie de Parcoursup à corriger pour être identiques toutes les années et
+# identiques au fichier du taux de poursuite (Caen et Rouen fusionnent en Normandie en 2020)
+CORRECTIONS_ACADEMIES = {
+    "Besancon": "Besançon",
+    "Caen": "Normandie",
+    "Rouen": "Normandie",
+    "Réunion": "La Réunion",
+}
+
+
 def ajouter_code(df):
     """Ajoute la colonne code : l'identifiant de la formation, suivi d'une année à l'autre.
 
@@ -124,6 +134,13 @@ def empiler(bases):
     return base
 
 
+def harmoniser_academie(base):
+    """Ajoute la colonne academie : acad_mies avec les noms corrigés (CORRECTIONS_ACADEMIES)."""
+    base = base.copy()
+    base["academie"] = base["acad_mies"].replace(CORRECTIONS_ACADEMIES)
+    return base
+
+
 def preparer_base(bases):
     """Enchaîne toutes les étapes et renvoie la base empilée.
 
@@ -135,4 +152,55 @@ def preparer_base(bases):
         for annee, df in bases.items()
     }
     bases = completer_2018_2019(bases)
-    return empiler(bases)
+    return harmoniser_academie(empiler(bases))
+
+
+def harmoniser_ips(tables):
+    """Réunit les 3 fichiers IPS des lycées en un seul tableau aux colonnes identiques.
+
+    Différences entre les fichiers : l'IPS de l'ensemble du lycée s'appelle
+    ips_ensemble_gt_pro jusqu'en 2022 et ips_etab à partir de 2023, et les IPS sont
+    du texte (lus en str) qu'il faut convertir en nombres.
+    Renvoie une ligne par lycée (uai) et par rentrée (2016 pour 2016-2017, etc.).
+    """
+    colonnes = ["rentree_scolaire", "uai", "secteur", "type_de_lycee",
+                "ips_ensemble_gt_pro", "ips_voie_gt", "ips_voie_pro"]
+    morceaux = [t.rename(columns={"ips_etab": "ips_ensemble_gt_pro"})[colonnes] for t in tables]
+    ips = pd.concat(morceaux, ignore_index=True)
+
+    ips["rentree"] = ips["rentree_scolaire"].str[:4].astype(int)  # "2016-2017" -> 2016
+    for colonne in ["ips_ensemble_gt_pro", "ips_voie_gt", "ips_voie_pro"]:
+        # errors="coerce" : une valeur qui n'est pas un nombre devient NaN au lieu d'une erreur
+        ips[colonne] = pd.to_numeric(ips[colonne], errors="coerce")
+
+    ips = ips.rename(columns={"ips_ensemble_gt_pro": "ips_lycee"})
+    return ips.drop(columns="rentree_scolaire")
+
+
+def preparer_poursuite(poursuite):
+    """Calcule, pour chaque ligne du fichier de poursuite d'études, le nombre de poursuivants.
+
+    Une ligne = une session du bac, une académie du bac, une voie et un genre.
+    Les colonnes *_stable, *_flux_a et *_flux_ar comptent les néo-bacheliers qui
+    poursuivent dans chaque type de formation : dans la même académie (stable), dans
+    une autre académie de la même région académique (flux_a), ou dans une autre région
+    académique (flux_ar). On fait les trois sommes, puis leur total.
+    """
+    df = poursuite.copy()
+    stable = [c for c in df.columns if c.endswith("_stable")]
+    flux_a = [c for c in df.columns if c.endswith("_flux_a")]
+    flux_ar = [c for c in df.columns if c.endswith("_flux_ar")]
+
+    # sum(axis=1) : somme sur les colonnes de la liste, ligne par ligne
+    df["poursuivants_meme_academie"] = df[stable].sum(axis=1)
+    df["poursuivants_autre_academie_meme_region"] = df[flux_a].sum(axis=1)
+    df["poursuivants_autre_region"] = df[flux_ar].sum(axis=1)
+    df["poursuivants"] = (df["poursuivants_meme_academie"]
+                          + df["poursuivants_autre_academie_meme_region"]
+                          + df["poursuivants_autre_region"])
+
+    df = df.rename(columns={"rentree_session": "annee", "aca_lib": "academie",
+                            "voie_du_baccalaureat": "voie"})
+    return df[["annee", "academie", "voie", "genre", "bacheliers", "poursuivants",
+               "poursuivants_meme_academie", "poursuivants_autre_academie_meme_region",
+               "poursuivants_autre_region"]]
