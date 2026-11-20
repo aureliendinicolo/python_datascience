@@ -1,4 +1,4 @@
-# python_datascience
+# Etude de la démocratisation de l’enseignement supérieur depuis l’ouverture de Parcoursup en 2018
 
 Projet Python pour la data science, ENSAE (2A), 2026-2027.
 

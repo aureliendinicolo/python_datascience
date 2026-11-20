@@ -204,3 +204,9 @@ def preparer_poursuite(poursuite):
     return df[["annee", "academie", "voie", "genre", "bacheliers", "poursuivants",
                "poursuivants_meme_academie", "poursuivants_autre_academie_meme_region",
                "poursuivants_autre_region"]]
+
+
+def base_selective(base):
+    """ créer une nouvelle base ou on ne garde que les formations sélectives
+    base : mettre le nom de la base créée et sauvegarder dans data"""
+    return base[base["selective"]==1.0]
