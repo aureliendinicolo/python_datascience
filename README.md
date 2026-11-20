@@ -4,7 +4,7 @@ Projet Python pour la data science, ENSAE (2A), 2026-2027.
 
 ## Question
 
-**Huit ans après sa création, Parcoursup a-t-il permis une démocratisation de l'accès à l'enseignement supérieur ?**
+**Observe-t-on une démocratisation de l'enseignement supérieur depuis l'ouverture de la plateforme Parcoursup ?**
 
 On ne cherche pas à établir un effet causal de la plateforme. On décrit comment le profil des candidats et des admis a évolué entre 2018 et 2025 (boursiers, type de bac, mention, origine géographique, sexe), selon la filière et la sélectivité des formations, en signalant les limites des données.
 
